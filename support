@@ -1,0 +1,58 @@
+options:
+	prefix: s!
+	category: "╠━━━╣Destek╠━━━╣" # Açılıcak Odalar Kategorisi
+	botname: NourseMC #Bot Adı
+	channel: "699551688738078810" #Destek Odası
+	admins: "697713077571026944" #Diğer Admin Eklemek İçin "422773039084601344" and "422773039084601344"
+	token: "" #Discord Bot Token
+
+on skript load:
+	login to {@token} with the name "{@botname}"
+	mark "{@botname}" as playing "NourseMC"
+				
+discord command kapat [<user>]:
+	prefixes: {@prefix}
+	bots: {@botname}
+	executable in: guild
+	trigger:
+		if arg 1 is not set:
+			if {nhelp::%id of event-user%} is set:
+				make embed:
+					add field named "Başarılı!" with value "%event-user% Destek Odan Kapatıldı." to field of embed
+				reply with last created embed
+				wait 1 seconds
+				delete channel named "destek-%id of event-user%" in lower case with event-bot
+				delete {nhelp::%id of event-user%}
+		if arg 1 is set:
+			if id of event-user is {@admins}:
+				if {nhelp::%id of arg-1%} is set:
+					make embed:
+						add field named "Başarılı!" with value "%arg-1% Destek Odası Kapatıldı." to field of embed
+					reply with last created embed
+					wait 1 seconds
+					delete channel named "destek-%id of arg-1%" in lower case with event-bot
+					delete {nhelp::%id of arg-1%}
+				else:
+					make embed:
+						add field named "Başarısız!" with value "%arg-1% Kullanıcısının Destek Odası Mevcut Değil" to field of embed
+					reply with last created embed
+
+guild message received:
+	if id of event-channel is {@channel}:
+		if {nhelp::%id of event-user%} is not set:
+			create text channel:
+				set name of channel to "destek-%id of event-user%"
+				set parent of channel to category named {@category} in lower case
+			create last channel in event-guild and store it in {_channel} 
+			deny public role of event-guild permission view channel in {_channel} with event-bot
+			make embed:
+				add field named "Selam %event-user%!" with value "Yakında Konu İle İlgilenecektir." to field of embed
+				add field named "Bilgilendirme" with value "{@prefix}kapat İle Odayı Kapatabilirsiniz" to field of embed
+				add field named "Konu" with value "%event-message%" to field of embed
+			send last embed to {_channel} with event-bot
+			send "@here" to {_channel} with event-bot
+			allow event-member permission message write and view channel in {_channel}
+			purge event-message with event-bot
+			set {nhelp::%id of event-user%} to true
+		else:
+			purge event-message with event-bot
